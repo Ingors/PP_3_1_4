@@ -3,70 +3,59 @@ package ru.kata.spring.boot_security.demo.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import javax.persistence.*;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
-
-    @Column(name = "login", unique = true)
-    private String login;
-
-    @Column(name = "name")
+    private Long id;
+    @Column(name = "first_name")
     private String name;
-
-    @Column(name = "surname")
-    private String surname;
-
+    @Column(name = "last_name")
+    private String lastName;
     @Column(name = "age")
     private int age;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @Column(name = "pass")
-    private String pass;
-
+    @Column(name = "email", unique = true)
+    private String email;
+    @Column(name = "password")
+    private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "roleId"))
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id"))
+    @Column(name = "roles")
+    private Set<Role> roles = new HashSet<>();
 
-    private List<Role> roles;
-    @Override
-    public Set<? extends SimpleGrantedAuthority> getAuthorities() {
-        Set<SimpleGrantedAuthority> authorities =
-                getRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-                        .collect(Collectors.toSet());
-        return authorities;
+    public void addRole(Role role) {
+        roles.add(role);
+    }
+
+    public String roles() {
+        String[] result = new String[]{""};
+        getRoles().forEach(role -> result[0] += role.getName() + ", ");
+        return result[0];
     }
 
     @Override
-    public String getPassword() {
-        return pass;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
     }
 
     @Override
     public String getUsername() {
-        return login;
+        return email;
     }
 
     @Override
@@ -94,11 +83,11 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return name.equals(user.name) && login.equals(user.login) && surname.equals(user.surname) && phone.equals(user.phone);
+        return age == user.age && name.equals(user.name) && lastName.equals(user.lastName) && email.equals(user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, login, surname, age, phone);
+        return Objects.hash(name, lastName, age, email);
     }
 }

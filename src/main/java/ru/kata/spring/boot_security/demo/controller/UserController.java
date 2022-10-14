@@ -1,31 +1,37 @@
 package ru.kata.spring.boot_security.demo.controller;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.service.PrivateUserDetailsService;
-import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import ru.kata.spring.boot_security.demo.service.UserService;
+
 
 @Controller
-@RequestMapping(value = "/user")
+@RequestMapping("/")
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
-    private final PrivateUserDetailsService privateUserDetailsService;
 
+    private final UserService userService;
 
-    public UserController(UserServiceImpl userServiceImpl, PrivateUserDetailsService privateUserDetailsService) {
-        this.userServiceImpl = userServiceImpl;
-        this.privateUserDetailsService = privateUserDetailsService;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @GetMapping
-    public String user(Model model) {
-        String principalName = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = (User) privateUserDetailsService.loadUserByUsername(principalName);
-        model.addAttribute("user", user);
+    @GetMapping("/user")
+    public String userPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        model.addAttribute("user", userService.getUserByEmail(userDetails.getUsername()));
         return "user";
+    }
+
+    @GetMapping("/login")
+    public String loginPage() {
+        return "login";
     }
 }

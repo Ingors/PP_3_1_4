@@ -13,10 +13,10 @@
 <body>
 <div id="header" class="d-flex bg-dark p-0">
     <div class="p-2 w-100 text-white">
-        <a><span class="p-2 align-middle" th:text="${user.email}"></span></a>
+        <a><span class="p-2 align-middle" th:text="${user.phone}"></span></a>
         <span class="align-middle">with roles:</span>
         <span class="align-middle" th:block th:each="role : ${user.getRoles()}">
-                                            <span th:text="${role.name}"/>
+                                            <span th:text="${role.role}"/>
         </span>
     </div>
     <a></a>
@@ -61,12 +61,12 @@
                                 <tr>
                                     <td th:text="${user.id}"></td>
                                     <td th:text="${user.name}"></td>
-                                    <td th:text="${user.lastName}"></td>
+                                    <td th:text="${user.surname}"></td>
                                     <td th:text="${user.age}"></td>
-                                    <td th:text="${user.email}"></td>
+                                    <td th:text="${user.phone}"></td>
                                     <td>
                                         <th:block th:each="role: ${user.roles}"
-                                                  th:text="${role.name} + ' '">
+                                                  th:text="${role.role} + ' '">
                                         </th:block>
                                     </td>
                                 </tr>
