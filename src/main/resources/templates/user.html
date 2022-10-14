@@ -9,37 +9,36 @@
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <title>User Page</title>
 </head>
-
 <body>
-<div id="header" class="d-flex bg-dark p-0">
-    <div class="p-2 w-100 text-white">
-        <a><span class="p-2 align-middle" th:text="${user.phone}"></span></a>
-        <span class="align-middle">with roles:</span>
-        <span class="align-middle" th:block th:each="role : ${user.getRoles()}">
-                                            <span th:text="${role.role}"/>
-        </span>
-    </div>
-    <a></a>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="btn btn-dark text-secondary">Logout</button>
-    </form>
-    </a>
-</div>
 
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <p class="navbar-brand text-white">
+            <b><span class="align-middle" th:text="${user.email}"></span></b>
+            <span class="align-middle">with roles:</span>
+            <span class="align-middle" th:block th:each="role : ${user.getRoles()}">
+                                            <span th:text="${role.name}"/></span>
+        </p>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-dark text-secondary">Logout</button>
+        </form>
+    </div>
+</nav>
 <div class="container-fluid h-100">
     <div class="row h-100">
 
         <div class="p-0 col-2">
             <div class="nav flex-column nav-pills pt-4" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <a class="nav-link" href="/admin" sec:authorize="hasRole('ADMIN')" role="tab"
+                <a class="nav-link" href="/admin" sec:authorize="hasAuthority('ADMIN')" role="tab"
                    aria-controls="v-pills-home" aria-selected="true">Admin</a>
-                <a class="nav-link active" href="/user" sec:authorize="(hasAnyRole('ADMIN', 'USER'))" role="tab"
+                <a class="nav-link active" href="/user" sec:authorize="(hasAnyAuthority('ADMIN', 'USER'))" role="tab"
                    aria-controls="v-pills-profile" aria-selected="false">User</a>
             </div>
         </div>
+
         <div class="p-0 col-10 bg-light">
             <div class="tabs p-4">
-                <h1>User information page</h1>
+                <h1 class="m-3 fw-bold">User panel</h1>
                 <div class="pt-2 tab-content">
                     <div class="tab-pane fade show active" id="description">
                         <div class="p-3 border">
@@ -50,8 +49,8 @@
                                 <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>First name</th>
-                                    <th>Last name</th>
+                                    <th>Name</th>
+                                    <th>Surname</th>
                                     <th>Age</th>
                                     <th>Email</th>
                                     <th>Role</th>
@@ -61,12 +60,12 @@
                                 <tr>
                                     <td th:text="${user.id}"></td>
                                     <td th:text="${user.name}"></td>
-                                    <td th:text="${user.surname}"></td>
+                                    <td th:text="${user.lastName}"></td>
                                     <td th:text="${user.age}"></td>
-                                    <td th:text="${user.phone}"></td>
+                                    <td th:text="${user.email}"></td>
                                     <td>
-                                        <th:block th:each="role: ${user.roles}"
-                                                  th:text="${role.role} + ' '">
+                                        <th:block th:each="role : ${user.getRoles()}">
+                                            <span th:text="${role.name}"/>
                                         </th:block>
                                     </td>
                                 </tr>
@@ -84,5 +83,4 @@
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
 </body>
-
 </html>
