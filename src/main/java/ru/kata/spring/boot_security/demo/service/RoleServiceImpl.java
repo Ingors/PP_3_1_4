@@ -3,41 +3,36 @@ package ru.kata.spring.boot_security.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.kata.spring.boot_security.demo.model.Role;
-import ru.kata.spring.boot_security.demo.repository.RoleDao;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.Set;
 
 @Service
-public class RoleServiceImpl implements RoleService{
+public class RoleServiceImpl implements RoleService {
 
-    private final RoleDao roleDao;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public RoleServiceImpl(RoleDao roleDao) {
-        this.roleDao = roleDao;
+    public RoleServiceImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
     }
 
-    @Override
-    public Set<Role> getAllRoles() {
-        return roleDao.getAllRoles();
+    public Set<Role> findAll() {
+        return new HashSet<>(roleRepository.findAll());
     }
 
-    @Override
-    public Set<Role> getByName(String name) {
-        Set<Role> roles = new HashSet<>();
-        for (Role role : getAllRoles()) {
-            if (name.contains(role.getName())) {
-                roles.add(role);
-            }
-        }
-        return roles;
+    public Role findByName(String name) {
+        return roleRepository.findByName(name);
     }
-
-    @Override
     @Transactional
-    public void saveRole(Role role) {
-        roleDao.saveRole(role);
+    public void save(Role role) {
+        roleRepository.save(role);
+    }
+
+    @Override
+    public Role findById(Integer id) {
+        return roleRepository.findById(id).orElse(null);
     }
 }

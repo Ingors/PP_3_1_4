@@ -1,72 +1,66 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repository.UserDao;
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserDetailsService, UserService {
 
-    private final UserDao userDao;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserDao userDao, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.userDao = userDao;
+    public UserServiceImpl(UserRepository userRepository, @Lazy PasswordEncoder bCryptPasswordEncoder) {
+        this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    @Override
+    public User findById(Integer id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
     @Transactional
-    public void add(User user) {
+    public void saveUser(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        userDao.create(user);
+        userRepository.save(user);
     }
 
-    @Override
-    public User getUserById(Long id) {
-        return userDao.getUserById(id);
-    }
-
-    @Override
     @Transactional
-    public void delete(Long id) {
-        userDao.delete(id);
-    }
-
-    @Override
-    @Transactional
-    public void update(User user, Long id) {
-        user.setId(id);
-        user.setPassword(user.getPassword() != null && !user.getPassword().trim().equals("") ?
-                bCryptPasswordEncoder.encode(user.getPassword()) : userDao.getUserById(id).getPassword());
-        user.setEmail(userDao.getUserById(id).getUsername());
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return userDao.getAllUsers();
-    }
-
-    @Override
-    public User getUserByEmail(String email) {
-        return userDao.findByEmail(email);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userDao.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("User doesn't exists");
+    public void updateUser(User user) {
+        if (!user.getPassword().equals(userRepository.getById(user.getId()).getPassword())) {
+            user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         }
-        return user;
+        userRepository.save(user);
     }
+
+    @Transactional
+    public void deleteById(Integer id) {
+        userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username);
+    }
+
+    public User findByEmail(String email) {
+        return  userRepository.findByUsername(email);
+    }
+
 }

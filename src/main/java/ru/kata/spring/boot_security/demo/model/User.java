@@ -1,51 +1,57 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import javax.persistence.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@ToString
 public class User implements UserDetails {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "first_name")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "username")
     private String name;
-    @Column(name = "last_name")
-    private String lastName;
-    @Column(name = "age")
-    private int age;
-    @Column(name = "email", unique = true)
-    private String email;
     @Column(name = "password")
     private String password;
 
+    @Column(name = "name")
+    private String surname;
+
+    @Column(name = "email", unique = true, nullable = false)
+    private String username;
+
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "users_roles",
+    @JoinTable(
+            name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "roles_id"))
-    @Column(name = "roles")
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Fetch(FetchMode.JOIN)
+    @ToString.Exclude
     private Set<Role> roles = new HashSet<>();
 
-    public void addRole(Role role) {
-        roles.add(role);
+    public User() {
     }
-
-    public String roles() {
-        String[] result = new String[]{""};
-        getRoles().forEach(role -> result[0] += role.getName() + ", ");
-        return result[0];
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -55,39 +61,54 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
-
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
-
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return true;
     }
-
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return true;
+    }
+
+    public void setRole(Role role) {
+        roles.add(role);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         User user = (User) o;
-        return age == user.age && name.equals(user.name) && lastName.equals(user.lastName) && email.equals(user.email);
+        return id != null && Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, lastName, age, email);
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", email='" + username + '\'' +
+                ", roleList=" + roles +
+                '}';
     }
 }

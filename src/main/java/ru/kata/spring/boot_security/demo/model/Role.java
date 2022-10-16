@@ -1,31 +1,22 @@
 package ru.kata.spring.boot_security.demo.model;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import org.springframework.security.core.GrantedAuthority;
-
 import javax.persistence.*;
-import java.util.Set;
+import org.hibernate.Hibernate;
+import java.util.Objects;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "role")
+@Table(name = "roles")
 public class Role implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "name")
+    @Column
+    private Integer id;
+    @Column
     private String name;
 
-    @Transient
-    @ManyToMany(mappedBy = "roles")
-    @JoinTable(name = "users_roles",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "users_id"))
-    private Set <User> users;
+    public Role() { }
 
     public Role(String name) {
         this.name = name;
@@ -33,21 +24,43 @@ public class Role implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return getName();
+        return name;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Role role = (Role) o;
-        return id == role.id && name.equals(role.name);
+        return id != null && Objects.equals(id, role.id);
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public int hashCode() {
-        int result = 117;
-        result *= 19 + name.hashCode();
-        return result;
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
